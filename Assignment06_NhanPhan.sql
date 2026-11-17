@@ -257,23 +257,32 @@ GRANT SELECT ON vInventories to PUBLIC;
 -- 	UnitPrice
 -- FROM vProducts;
 
----- Step 3.3 create a view by joining the result of step 3.1 and 3.2 
-go  
+---- Step 3.3 joining the result of step 3.1 and 3.2 
+---- order result by CategoryName and ProductName
+-- SELECT TOP 
+-- 		[CategoryName] = vc.CategoryName,
+-- 		[ProductName] = vp.ProductName,
+-- 		[UnitPrice] = vp.UnitPrice
+-- 	FROM vCategories as vc  
+-- 	JOIN vProducts as vp  
+-- 	ON vc.CategoryID = vp.CategoryID
+-- 	ORDER BY CategoryName, ProductName;
 
+---- Step 3.4 create view from step 3.3 results
+go  
 CREATE VIEW vProductsByCategories
 AS 
-	SELECT 
+	SELECT TOP 10000000
 		[CategoryName] = vc.CategoryName,
 		[ProductName] = vp.ProductName,
 		[UnitPrice] = vp.UnitPrice
 	FROM vCategories as vc  
 	JOIN vProducts as vp  
-	ON vc.CategoryID = vp.CategoryID;
-
----- Step 3.4 order view result of step 3.3 by CategoryName and ProductName
+	ON vc.CategoryID = vp.CategoryID
+	ORDER BY CategoryName, ProductName;
 go  
 
-SELECT * FROM vProductsByCategories ORDER BY CategoryName, ProductName;
+
 
 
 -- Question 4 (10% pts): How can you create a view to show a list of Product names 
@@ -287,25 +296,33 @@ SELECT * FROM vProductsByCategories ORDER BY CategoryName, ProductName;
 -- 	Count
 -- FROM vInventories;
 
----- step 4.2 Joint the results from step 4.1 by ProductID and create the view for it
+---- step 4.2 Joint the results from step 4.1 by ProductID 
+
+-- SELECT 
+-- 	[ProductName] = vp.ProductName,
+-- 	[InventoryDate] = vi.InventoryDate,
+-- 	[Count] = vi.count 
+-- FROM vProducts AS vp 
+-- JOIN vInventories AS vi 
+-- ON vp.ProductID = vi.ProductID
+-- ORDER BY ProductName, InventoryDate, Count;
+
+---- step 4.3 create view using results of step 4.2 and order the result by Product, Date, and Count
 go  
 
 CREATE VIEW vInventoriesByProductsByDates
 AS
-	SELECT 
+	SELECT TOP 10000000
 		[ProductName] = vp.ProductName,
 		[InventoryDate] = vi.InventoryDate,
 		[Count] = vi.count 
 	FROM vProducts AS vp 
 	JOIN vInventories AS vi 
-	ON vp.ProductID = vi.ProductID;
+	ON vp.ProductID = vi.ProductID
+	ORDER BY ProductName, InventoryDate, Count
+	;
 
-
----- step 4.3 Order the result of step 4.2 by Product, Date, and Count
 go
-
-SELECT * FROM vInventoriesByProductsByDates 
-ORDER BY ProductName, InventoryDate, Count;
 
 
 -- Question 5 (10% pts): How can you create a view to show a list of Inventory Dates 
@@ -326,26 +343,35 @@ ORDER BY ProductName, InventoryDate, Count;
 -- 	EmployeeLastName
 -- FROM vEmployees;
 
----- step 5.2 join step 5.1 tables using EmployeeID and create view
+---- step 5.2 join step 5.1 tables and columns using EmployeeID 
 ---- concatinating EmployeeFirstName and EmployeeLastName to Column EmployeeName
----- also use GROUP BY to make sure the view return one row per date
-go  
+---- also use GROUP BY to make sure it return one row per date
+---- and order the results by Date
 
+-- SELECT 
+-- 	[InventoryDate] = vi.InventoryDate,
+-- 	[EmployeeName] = ve.EmployeeFirstName + ' ' + ve.EmployeeLastName
+-- FROM vInventories as vi  
+-- JOIN vEmployees as ve
+-- ON vi.EmployeeID = ve.EmployeeID
+-- GROUP BY vi.InventoryDate, ve.EmployeeFirstName, ve.EmployeeLastName
+-- ORDER BY [InventoryDate];
+
+
+---- step 5.3 create view using results of step 5.2 
+go  
 CREATE VIEW vInventoriesByEmployeesByDates
 AS 
-	SELECT
+	SELECT TOP 10000000
 		[InventoryDate] = vi.InventoryDate,
 		[EmployeeName] = ve.EmployeeFirstName + ' ' + ve.EmployeeLastName
 	FROM vInventories as vi  
 	JOIN vEmployees as ve
 	ON vi.EmployeeID = ve.EmployeeID
-	GROUP BY vi.InventoryDate, ve.EmployeeFirstName, ve.EmployeeLastName;
-
----- step 5.3 Order the results from step 5.2 by Date
+	GROUP BY vi.InventoryDate, ve.EmployeeFirstName, ve.EmployeeLastName
+	ORDER BY [InventoryDate];
 go  
 
-SELECT * FROM vInventoriesByEmployeesByDates
-ORDER BY [InventoryDate];
 
 
 -- Question 6 (10% pts): How can you create a view show a list of Categories, Products, 
@@ -353,19 +379,33 @@ ORDER BY [InventoryDate];
 -- Order the results by the Category, Product, Date, and Count!
 
 ---- step 6.1 List the columns and tables we want
-SELECT CategoryName FROM vCategories;
-SELECT ProductName FROM vPRoducts;
-SELECT 
-	InventoryDate,
-	Count
-FROM vInventories;
+-- SELECT CategoryName FROM vCategories;
+-- SELECT ProductName FROM vPRoducts;
+-- SELECT 
+-- 	InventoryDate,
+-- 	Count
+-- FROM vInventories;
 
----- step 6.2 create a view by joining the columns and tables from step 6.1 by CategoryID and ProductID 
+---- step 6.2 join the columns and tables from step 6.1 by CategoryID and ProductID 
+---- order the Order the results from by Category, Product, Date, and Count
+
+-- SELECT 
+-- 	[CategoryName] = vc.CategoryName,
+-- 	[ProductName] = vp.ProductName,
+-- 	[InventoryDate] = vi.InventoryDate,
+-- 	[Count] = vi.Count  
+-- FROM vCategories as vc  
+-- JOIN vProducts as vp 
+-- ON vc.CategoryID = vp.CategoryID
+-- JOIN vInventories as vi 
+-- ON vp.ProductID = vi.ProductID
+-- ORDER BY CategoryName, ProductName, InventoryDate, Count;
+
+---- step 6.3 create view using with results from step 6.3 
 go  
-
 CREATE VIEW vInventoriesByProductsByCategories
 AS
-	SELECT
+	SELECT TOP 10000000
 		[CategoryName] = vc.CategoryName,
 		[ProductName] = vp.ProductName,
 		[InventoryDate] = vi.InventoryDate,
@@ -374,12 +414,10 @@ AS
 	JOIN vProducts as vp 
 	ON vc.CategoryID = vp.CategoryID
 	JOIN vInventories as vi 
-	ON vp.ProductID = vi.ProductID;
-
----- step 6.3 order the Order the results from step 6.2 by Category, Product, Date, and Count
+	ON vp.ProductID = vi.ProductID
+	ORDER BY CategoryName, ProductName, InventoryDate, Count;
 go  
-SELECT * FROM vInventoriesByProductsByCategories 
-ORDER BY CategoryName, ProductName, InventoryDate, Count;
+
 
 
 -- Question 7 (10% pts): How can you create a view to show a list of Categories, Products, 
@@ -398,41 +436,30 @@ ORDER BY CategoryName, ProductName, InventoryDate, Count;
 -- 	EmployeeLastName
 -- FROM vEmployees;
 
----- step 7.2 create a view by joining the columns and tables from step 7.1 
+---- step 7.2 join the columns and tables from step 7.1 
 ---- by CategoryID, ProductID, and EmployeeID
-go   
+---- order by Inventory Date, Category, Product and Employee
+-- SELECT  
+-- 	[CategoryName] = vc.CategoryName,
+-- 	[ProductName] = vp.ProductName,
+-- 	[InventoryDate] = vi.InventoryDate,
+-- 	[Count] = vi.Count,  
+-- 	[EmployeeName] = ve.EmployeeFirstName + ' ' + ve.EmployeeLastName
+-- FROM vCategories as vc  
+-- JOIN vProducts as vp 
+-- ON vc.CategoryID = vp.CategoryID
+-- JOIN vInventories as vi 
+-- ON vp.ProductID = vi.ProductID
+-- JOIN vEmployees as ve 
+-- ON vi.EmployeeID = ve.EmployeeID
+-- ORDER BY [InventoryDate], [CategoryName], [ProductName], [EmployeeName];
 
+
+---- step 7.3 create the view from step 7.2 results
+go   
 CREATE VIEW vInventoriesByProductsByEmployees
 AS
-	SELECT
-		[CategoryName] = vc.CategoryName,
-		[ProductName] = vp.ProductName,
-		[InventoryDate] = vi.InventoryDate,
-		[Count] = vi.Count,  
-		[EmployeeName] = ve.EmployeeFirstName + ' ' + ve.EmployeeLastName
-	FROM vCategories as vc  
-	JOIN vProducts as vp 
-	ON vc.CategoryID = vp.CategoryID
-	JOIN vInventories as vi 
-	ON vp.ProductID = vi.ProductID
-	JOIN vEmployees as ve 
-	ON vi.EmployeeID = ve.EmployeeID;
-
----- step 7.3 order the view from step 7.2 by Inventory Date, Category, Product and Employee
-go
-SELECT * FROM vInventoriesByProductsByEmployees
-ORDER BY [InventoryDate], [CategoryName], [ProductName], [EmployeeName];
-
--- Question 8 (10% pts): How can you create a view to show a list of Categories, Products, 
--- the Inventory Date and Count of each product, and the Employee who took the count
--- for the Products 'Chai' and 'Chang'? 
-
----- step 8.1 create the view using step 7.2 and add WHERE condtion to check 
----- ProductName is either 'Chai' or Chang
-go 
-CREATE VIEW vInventoriesForChaiAndChangByEmployees
-AS
-	SELECT
+	SELECT TOP 10000000
 		[CategoryName] = vc.CategoryName,
 		[ProductName] = vp.ProductName,
 		[InventoryDate] = vi.InventoryDate,
@@ -445,29 +472,106 @@ AS
 	ON vp.ProductID = vi.ProductID
 	JOIN vEmployees as ve 
 	ON vi.EmployeeID = ve.EmployeeID
-	WHERE ProductName = 'Chai' OR ProductName = 'Chang';
+	ORDER BY [InventoryDate], [CategoryName], [ProductName], [EmployeeName];
+go
 
----- step 8.2 order the view from step 8.1 by Inventory Date, Category, Product and Employee
+
+-- Question 8 (10% pts): How can you create a view to show a list of Categories, Products, 
+-- the Inventory Date and Count of each product, and the Employee who took the count
+-- for the Products 'Chai' and 'Chang'? 
+
+---- step 8.1 use results of 7.2 and add WHERE condtion to check 
+---- ProductID in the list of ProductName is either 'Chai' or Chang
+---- and order by Inventory Date, Category, Product and Employee
+
+-- SELECT 
+-- 	[CategoryName] = vc.CategoryName,
+-- 	[ProductName] = vp.ProductName,
+-- 	[InventoryDate] = vi.InventoryDate,
+-- 	[Count] = vi.Count,  
+-- 	[EmployeeName] = ve.EmployeeFirstName + ' ' + ve.EmployeeLastName
+-- FROM vCategories as vc  
+-- JOIN vProducts as vp 
+-- ON vc.CategoryID = vp.CategoryID
+-- JOIN vInventories as vi 
+-- ON vp.ProductID = vi.ProductID
+-- JOIN vEmployees as ve 
+-- ON vi.EmployeeID = ve.EmployeeID
+-- WHERE vp.ProductID in (
+-- 	SELECT ProductID 
+-- 	FROM Products
+-- 	WHERE ProductName = 'Chai' OR ProductName = 'Chang'
+-- )
+-- ORDER BY [InventoryDate], [CategoryName], [ProductName], [EmployeeName];
+
+
+---- step 8.2 create the view using results of step 8.1
+go 
+CREATE VIEW vInventoriesForChaiAndChangByEmployees
+AS
+	SELECT TOP 10000000
+		[CategoryName] = vc.CategoryName,
+		[ProductName] = vp.ProductName,
+		[InventoryDate] = vi.InventoryDate,
+		[Count] = vi.Count,  
+		[EmployeeName] = ve.EmployeeFirstName + ' ' + ve.EmployeeLastName
+	FROM vCategories as vc  
+	JOIN vProducts as vp 
+	ON vc.CategoryID = vp.CategoryID
+	JOIN vInventories as vi 
+	ON vp.ProductID = vi.ProductID
+	JOIN vEmployees as ve 
+	ON vi.EmployeeID = ve.EmployeeID
+	WHERE vp.ProductID in (
+		SELECT ProductID 
+		FROM Products
+		WHERE ProductName = 'Chai' OR ProductName = 'Chang'
+	)
+	ORDER BY [InventoryDate], [CategoryName], [ProductName], [EmployeeName];
 go  
-SELECT * FROM vInventoriesForChaiAndChangByEmployees
-ORDER BY [InventoryDate], [CategoryName], [ProductName], [EmployeeName];
+
 
 
 -- Question 9 (10% pts): How can you create a view to show a list of Employees and the Manager who manages them?
 -- Order the results by the Manager's name!
+
+---- Step 9.1 get list of Employee names 
+-- SELECT 
+-- 	EmployeeFirstName,
+-- 	EmployeeLastName
+-- FROM vEmployees;
+
+---- Step 9.2 get list of employeeid an d managerid 
+-- SELECT 
+-- 	EmployeeID,
+-- 	ManagerID
+-- FROM vEmployees;
+
+
+---- step 9.3 self join view vEmployees to get the list of Manager and Employee who report to them
+---- and order the results by the Manager's name
+
+-- SELECT 
+-- 	[Manager] = veM.EmployeeFirstName + ' ' + veM.EmployeeLastName,
+-- 	[Employee] = ve.EmployeeFirstName + ' ' + ve.EmployeeLastName
+-- FROM vEmployees as veM
+-- JOIN vEmployees as ve  
+-- ON veM.EmployeeID = ve.ManagerID
+-- ORDER BY [Manager], [Employee]; 
+
+---- step 9.4 create view from results of step 9.3
 go
 CREATE VIEW vEmployeesByManager
 AS 
-	SELECT 
+	SELECT TOP 10000000
 		[Manager] = veM.EmployeeFirstName + ' ' + veM.EmployeeLastName,
 		[Employee] = ve.EmployeeFirstName + ' ' + ve.EmployeeLastName
 	FROM vEmployees as veM
 	JOIN vEmployees as ve  
-	ON veM.EmployeeID = ve.ManagerID; 
-
+	ON veM.EmployeeID = ve.ManagerID
+	ORDER BY [Manager], [Employee]; 
 go
-SELECT * FROM vEmployeesByManager 
-ORDER BY [Manager], [Employee];
+
 
 
 -- Question 10 (20% pts): How can you create one view to show all the data from all four 
@@ -488,12 +592,38 @@ ORDER BY [Manager], [Employee];
 	-- [Employee] = EmployeeFirstName + ' ' + EmployeeLastName from vEmployees
 	-- [Manager] = EmployeeFirstName + ' ' + EmployeeLastName from vEmployees
 
----- step 10.2 join columns and views in step 10.1 by
+---- step 10.2 join columns in step 10.1 by
 ---- categoryID, productID, employeeID, managerID
+---- and  order the results by Category, Product, InventoryID, and Employee.
+-- SELECT 
+-- 	[CategoryID] = vc.CategoryID,
+-- 	[CategoryName] = vc.CategoryName,
+-- 	[ProductID] = vp.ProductID,
+-- 	[ProductName] = vp.ProductName,
+-- 	[UnitPrice] = vp.UnitPrice,
+-- 	[InventoryID] = vi.InventoryID,
+-- 	[InventoryDate] = vi.InventoryDate,
+-- 	[Count] = vi.Count,
+-- 	[EmployeeID] = ve.EmployeeID,
+-- 	[Employee] = ve.EmployeeFirstName + ' ' + ve.EmployeeLastName,
+-- 	[Manager] = veM.EmployeeFirstName + ' ' + veM.EmployeeLastName
+-- FROM vCategories as vc
+-- JOIN vProducts as vp
+-- ON vc.CategoryID = vp.CategoryID
+-- JOIN vInventories as vi  
+-- ON vi.ProductID = vp.ProductID
+-- JOIN vEmployees as ve
+-- ON ve.EmployeeID = vi.EmployeeID
+-- JOIN vEmployees as veM  
+-- ON veM.EmployeeID = ve.ManagerID
+-- ORDER BY [CategoryName], [ProductName], [InventoryID], [Employee];
+
+
+---- step 10.3 create the view from results of step 10.2 
 go
 CREATE VIEW vInventoriesByProductsByCategoriesByEmployees
 AS
-	SELECT 
+	SELECT TOP 10000000
 		[CategoryID] = vc.CategoryID,
 		[CategoryName] = vc.CategoryName,
 		[ProductID] = vp.ProductID,
@@ -513,10 +643,26 @@ AS
 	JOIN vEmployees as ve
 	ON ve.EmployeeID = vi.EmployeeID
 	JOIN vEmployees as veM  
-	ON veM.EmployeeID = ve.ManagerID;
-
----- step 10.3 order the results of step 10.2 view by 
----- Category, Product, InventoryID, and Employee.
+	ON veM.EmployeeID = ve.ManagerID
+	ORDER BY [CategoryName], [ProductName], [InventoryID], [Employee];
 go
-SELECT * FROM vInventoriesByProductsByCategoriesByEmployees
-ORDER BY [CategoryName], [ProductName], [InventoryID], [Employee];
+
+
+
+-- Test your Views (NOTE: You must change the your view names to match what I have below!)
+Print 'Note: You will get an error until the views are created!'
+Select * From [dbo].[vCategories]
+Select * From [dbo].[vProducts]
+Select * From [dbo].[vInventories]
+Select * From [dbo].[vEmployees]
+
+Select * From [dbo].[vProductsByCategories]
+Select * From [dbo].[vInventoriesByProductsByDates]
+Select * From [dbo].[vInventoriesByEmployeesByDates]
+Select * From [dbo].[vInventoriesByProductsByCategories]
+Select * From [dbo].[vInventoriesByProductsByEmployees]
+Select * From [dbo].[vInventoriesForChaiAndChangByEmployees]
+Select * From [dbo].[vEmployeesByManager]
+Select * From [dbo].[vInventoriesByProductsByCategoriesByEmployees]
+
+/***************************************************************************************/
